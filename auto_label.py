@@ -30,7 +30,7 @@ def read_text_file(file_path):
 
 
 # Function to create a SQuAD format annotation from user inputs
-def create_squad_annotation(title, text, questions_and_answers, sentences):
+def create_squad_annotation(title, text, questions_and_answers, sentences, threshold):
     squad_data = {
         "data": [
             {
@@ -79,8 +79,8 @@ def create_squad_annotation(title, text, questions_and_answers, sentences):
               print("similarity: ", max(similarities))
               print("transcript: ", sentences[max_similarity_index])
               
-              if max_similarity >= 0.95:
-                  
+              if max_similarity >= threshold:
+                  print("Use this gpt response")
                   ans_start = text.find(sentences[max_similarity_index])
                   
               else:
@@ -126,7 +126,7 @@ def remove_outer_quotes(input_str):
 
 
 # Main function
-def main(file_path, number):
+def main(file_path, number, threshold):
     
     output_path = os.path.splitext(file_path)[0] + '.json'
     filename_with_extension = os.path.basename(file_path)
@@ -148,9 +148,6 @@ def main(file_path, number):
         sentences.append(sentence.text)
         
     print("Total sentences in the transcript: ", len(sentences))
-    print(f"{model_id} maximun tokens: {word_limit}")
-    if word_length > word_limit:
-        print(f"Exceed maximun tokens!!")
         
         
     # prompt here
@@ -222,7 +219,7 @@ def main(file_path, number):
     print()
     print("Post-processing ==================================\n")
     # Create SQuAD format annotation
-    squad_data = create_squad_annotation(title, file_contents, questions_and_answers,sentences)
+    squad_data = create_squad_annotation(title, file_contents, questions_and_answers,sentences, threshold)
 
     # Output to a JSON file
 
@@ -252,10 +249,10 @@ if __name__ == "__main__":
     print("Using spaCy model: ", spacy_model)
     
     
-    path = "D:/GitHub/Unsuperviseed_SQuAD_Dataset_AutoLabeler/test.txt"
+    path = r"C:\Users\ee527\Desktop\Big Data Analytics\final_project\podcast_transcript\5\Prosecuting Donald Trump A Primer.txt"
     
     # file_name, number of questions
-    main(path, 15)
+    main(path, 15, 0.92)
 
 
 
