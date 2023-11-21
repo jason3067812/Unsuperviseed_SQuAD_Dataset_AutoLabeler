@@ -244,16 +244,9 @@ if __name__ == "__main__":
     # use your own key
     api_key = ""
     client = OpenAI(api_key=api_key)
-    model_id = "gpt-4-1106-preview"
+    
+    model_id = "gpt-4-1106-preview" # $0.01 / 1K tokens, recommend this model, more precise and can input larger transcripts !!!!!!!!
 
-    # $0.01 / 1K tokens
-    if model_id == "gpt-4-1106-preview":
-        word_limit = 128000
-        
-    # $0.0010 / 1K tokens
-    elif model_id == "gpt-3.5-turbo-1106":
-        word_limit = 16385
-        
         
     print("Using OpenAI model: ", model_id)
     print("Using spaCy model: ", spacy_model)
