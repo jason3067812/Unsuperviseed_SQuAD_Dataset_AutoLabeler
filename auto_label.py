@@ -2,6 +2,8 @@ from openai import OpenAI
 import json
 import sys
 import spacy
+import os
+
 spacy.prefer_gpu()
 nlp = spacy.load("en_core_web_lg")
 
@@ -69,6 +71,7 @@ def create_squad_annotation(title, text, questions_and_answers, sentences):
                   ans_start = text.find(sentences[max_similarity_index])
                   
               else:
+                  
                   print("Skip this error gpt response")
                   ans_start = -1
               
@@ -110,24 +113,32 @@ def remove_outer_quotes(input_str):
 
 
 # Main function
-def main(folder, title, number):
+def main(file_path, number):
     
     # use your own key
-    api_key = "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"
+    api_key = "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"
     client = OpenAI(api_key=api_key)
     model_id = "gpt-4-1106-preview"
         
-    file_path = f"C:/Users/ee527/Desktop/Big Data Analytics/final_project/podcast_transcript/{folder}/{title}.txt"
-    output_path = f"C:/Users/ee527/Desktop/Big Data Analytics/final_project/podcast_transcript/{folder}/{title}.json"
+        
+    output_path = os.path.splitext(file_path)[0] + '.json'
+    filename_with_extension = os.path.basename(file_path)
+    title = os.path.splitext(filename_with_extension)[0]
+
     
     with open(file_path, 'r') as file:
         file_contents = file.read()
         
-    sentences = file_contents.split(". ")
+        
+    # use spacy to split sentence
+    doc = nlp(file_contents)
+    sentences = []
+    for sentence in doc.sents:
+        sentences.append(sentence.text)
+    
     
     print("number of sentences: ", len(sentences))
 
-    
     # prompt here
 
     messages = [
@@ -177,6 +188,7 @@ def main(folder, title, number):
             answer = line[colon_index + 1:].strip()
             answer = remove_outer_quotes(answer)
             answer = answer[:-1]
+            answer = answer.replace("...", "")
             questions_and_answers.append((question, answer))
             
         else:
@@ -198,9 +210,10 @@ def main(folder, title, number):
   
 if __name__ == "__main__":
     
+    path = "D:/GitHub/Unsuperviseed_SQuAD_Dataset_AutoLabeler/test.txt"
     
-    # sub folder number, transcript name, number of questions
-    main("4","5 million In damages", 15)
+    # file_name, number of questions
+    main(path, 20)
 
 
 
