@@ -116,7 +116,7 @@ def remove_outer_quotes(input_str):
 def main(file_path, number):
     
     # use your own key
-    api_key = "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"
+    api_key = ""
     client = OpenAI(api_key=api_key)
     model_id = "gpt-4-1106-preview"
         
