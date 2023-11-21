@@ -2,19 +2,32 @@ from openai import OpenAI
 import json
 import sys
 import spacy
-import os
-
 spacy.prefer_gpu()
-nlp = spacy.load("en_core_web_lg")
+import os
+import string
+
+
+
+def remove_punctuation(sentence):
+    
+    punctuation = string.punctuation
+    
+    while sentence and sentence[0] in punctuation:
+        sentence = sentence[1:]
+    
+    while sentence and sentence[-1] in punctuation:
+        sentence = sentence[:-1]
+    
+    return sentence
+
 
 
 # Function to read a text file and return its content
 def read_text_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r') as file:
         return file.read()
 
-def get_start_idx(context, substring):
-    pass
+
 
 # Function to create a SQuAD format annotation from user inputs
 def create_squad_annotation(title, text, questions_and_answers, sentences):
@@ -66,7 +79,7 @@ def create_squad_annotation(title, text, questions_and_answers, sentences):
               print("similarity: ", max(similarities))
               print("transcript: ", sentences[max_similarity_index])
               
-              if max_similarity >= 0.85:
+              if max_similarity >= 0.95:
                   
                   ans_start = text.find(sentences[max_similarity_index])
                   
@@ -115,35 +128,37 @@ def remove_outer_quotes(input_str):
 # Main function
 def main(file_path, number):
     
-    # use your own key
-    api_key = ""
-    client = OpenAI(api_key=api_key)
-    model_id = "gpt-4-1106-preview"
-        
-        
     output_path = os.path.splitext(file_path)[0] + '.json'
     filename_with_extension = os.path.basename(file_path)
     title = os.path.splitext(filename_with_extension)[0]
 
+  
+    # read transcript
+    file_contents = read_text_file(file_path)
     
-    with open(file_path, 'r') as file:
-        file_contents = file.read()
-        
-        
+  
+    word_length = len(file_contents.split())
+    print("Total Words in the transcript: ", word_length)
+
+
     # use spacy to split sentence
     doc = nlp(file_contents)
     sentences = []
     for sentence in doc.sents:
         sentences.append(sentence.text)
-    
-    
-    print("number of sentences: ", len(sentences))
-
+        
+    print("Total sentences in the transcript: ", len(sentences))
+    print(f"{model_id} maximun tokens: {word_limit}")
+    if word_length > word_limit:
+        print(f"Exceed maximun tokens!!")
+        
+        
     # prompt here
-
+    prompt = f"Step1. Read this transcript below first: \n{file_contents}\nStep2. Now give me {number} questions and the precise reference sentence you find in the transcript. Don't ask same questions.\nRule1. There are some advertisement inside this transcript, you need to recognize them and don't use those information to ask question.\nRule2. You musn't paraphrase and change words, structure in the reference sentence. The reference sentence must be completely same and can find in the transcript.\nRule3. Your response should be this format below: \nQuestion: \nReference Sentence: \n\n"
+    
     messages = [
     
-        {"role": "user", "content": f"Read this transcript first: [{file_contents}]. Then give me {number} questions and the complete reference sentence you find in the transcript. Remember, there are some advertisement inside it, please recognize them and dont use those information to ask question. Remember, musn't abbreviate or paraphrase the reference sentence, the refernce sentence must be completely same in the transcript. Lastly, the response should be this format: Question: Who is Donald? Reference: I dont know. Question: Where does he live? Reference: He lives in NYC"}
+        {"role": "user", "content": prompt}
 
     ]
 
@@ -170,25 +185,34 @@ def main(file_path, number):
         print(line)
         
 
-        if line[-1] == "?":
-            # print("q")
+        if "Question:" in line:
+            print("q:")
             
             colon_index = line.index(':')
 
             # Extract the sentence after the first colon
             question = line[colon_index + 1:].strip()
+            print(question)
             
             
-        elif "Reference" in line:
-            # print("a")
+        elif "Reference Sentence:" in line:
+            print("a:")
             
             colon_index = line.index(':')
 
             # Extract the sentence after the first colon
             answer = line[colon_index + 1:].strip()
-            answer = remove_outer_quotes(answer)
-            answer = answer[:-1]
+            
+            # clean response here
+            
+            # clean head and tail punctuation marks
+            answer = remove_punctuation(answer)
+            
+            # clean "..."
             answer = answer.replace("...", "")
+            
+            print(answer)
+        
             questions_and_answers.append((question, answer))
             
         else:
@@ -210,10 +234,35 @@ def main(file_path, number):
   
 if __name__ == "__main__":
     
+    
+    # load spacy
+    spacy_model = "en_core_web_lg"
+    nlp = spacy.load(spacy_model)
+
+
+    # load openai api
+    # use your own key
+    api_key = ""
+    client = OpenAI(api_key=api_key)
+    model_id = "gpt-4-1106-preview"
+
+    # $0.01 / 1K tokens
+    if model_id == "gpt-4-1106-preview":
+        word_limit = 128000
+        
+    # $0.0010 / 1K tokens
+    elif model_id == "gpt-3.5-turbo-1106":
+        word_limit = 16385
+        
+        
+    print("Using OpenAI model: ", model_id)
+    print("Using spaCy model: ", spacy_model)
+    
+    
     path = "D:/GitHub/Unsuperviseed_SQuAD_Dataset_AutoLabeler/test.txt"
     
     # file_name, number of questions
-    main(path, 20)
+    main(path, 15)
 
 
 
