@@ -151,7 +151,7 @@ def main(file_path, number, threshold):
         
         
     # prompt here
-    prompt = f"Step1. Read this transcript below first: \n{file_contents}\nStep2. Now give me {number} questions and the precise reference sentence you find in the transcript. Don't ask same questions.\nRule1. There are some advertisement inside this transcript, you need to recognize them and don't use those information to ask question.\nRule2. You musn't paraphrase and change words, structure in the reference sentence. The reference sentence must be completely same and can find in the transcript.\nRule3. Your response should be this format below: \nQuestion: \nReference Sentence: \n\n"
+    prompt = f"Step1. Read this transcript below first: \n{file_contents}\nStep2. Now give me {number} questions and the precise reference sentence you find in the transcript. Don't ask same questions.\nRule1. There are some advertisement inside this transcript, you need to recognize them and don't use those information to ask question.\nRule2. You musn't paraphrase and change words, structure in the reference sentence. The reference sentence must be completely same and can find in the transcript.\nRule3. Your response should be this format below: \nQuestion: \nReference Sentence: \n\nQuestion: \nReference Sentence: \n\n"
     
     messages = [
     
